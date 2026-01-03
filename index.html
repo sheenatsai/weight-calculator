@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Weight Calculator | JOCHU</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Noto+Sans+TC:wght@400;500;700&display=swap');
+        
+        :root {
+            --apple-blue: #0071e3;
+            --apple-gray: #f5f5f7;
+            --apple-text: #1d1d1f;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro TC", "SF Pro Display", "Inter", "Noto Sans TC", sans-serif;
+            background-color: var(--apple-gray);
+            color: var(--apple-text);
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Apple 品牌風格標題 */
+        .apple-hero-title {
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -0.022em;
+            line-height: 1.1;
+            background: linear-gradient(135deg, #1d1d1f 20%, #438af3 50%, #8a63e5 80%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        @media (max-width: 640px) {
+            .apple-hero-title {
+                font-size: 2.8rem;
+            }
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.85);
+            backdrop-filter: saturate(180%) blur(25px);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.08);
+        }
+
+        .input-apple {
+            background: #ffffff;
+            border: 1px solid #d2d2d7;
+            border-radius: 12px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        /* 縮小提示詞 (Placeholder) 的字體大小 */
+        .input-apple::placeholder {
+            font-size: 13px;
+            font-weight: 400;
+            color: #a1a1a6;
+        }
+
+        .input-apple:focus {
+            outline: none;
+            border-color: var(--apple-blue);
+            box-shadow: 0 0 0 4px rgba(0, 113, 227, 0.12);
+        }
+
+        .tab-btn {
+            position: relative;
+            padding-bottom: 12px;
+            font-weight: 600;
+            color: #86868b;
+            transition: all 0.3s ease;
+        }
+
+        .tab-btn.active {
+            color: var(--apple-blue);
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 2px;
+            background: var(--apple-blue);
+            border-radius: 2px;
+        }
+
+        .result-surface {
+            background: linear-gradient(145deg, #1d1d1f 0%, #2c2c2e 100%);
+            border-radius: 28px;
+            color: #ffffff;
+            padding: 2.5rem;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.3);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .result-surface::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(67, 138, 243, 0.1) 0%, transparent 70%);
+            pointer-events: none;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .animate-value {
+            animation: fadeIn 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        }
+
+        select {
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%2386868b'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2.5' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 1rem center;
+            background-size: 1rem;
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col items-center justify-center p-6 bg-[#fbfbfd]">
+
+    <div class="w-full max-w-lg">
+        <!-- Header -->
+        <header class="text-center mb-14">
+            <h1 class="apple-hero-title">Weight<br>Calculator</h1>
+        </header>
+
+        <!-- Main Card -->
+        <div class="glass-card rounded-[2.5rem] p-8 md:p-10">
+            <!-- Navigation -->
+            <nav class="flex justify-start gap-10 mb-8 border-b border-gray-100">
+                <button id="tab-plate" onclick="switchTab('plate')" class="tab-btn active text-[14px] tracking-tight">板材模式</button>
+                <button id="tab-volume" onclick="switchTab('volume')" class="tab-btn text-[14px] tracking-tight">體積模式</button>
+            </nav>
+
+            <div class="space-y-8">
+                <!-- Material Picker - 分為金屬與其他 -->
+                <div class="space-y-2">
+                    <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">材質設定 (密度 g/cm³)</label>
+                    <select id="material" onchange="calculate()" class="input-apple w-full px-4 py-2.5 text-[15px] font-medium text-slate-700">
+                        <optgroup label="金屬材質">
+                            <option value="7.85">SECC 電鍍鋅鋼板 - 7.85 g/cm³</option>
+                            <option value="7.85">SPCC 冷軋鋼板 - 7.85 g/cm³</option>
+                            <option value="7.93">SUS304 不鏽鋼 - 7.93 g/cm³</option>
+                            <option value="2.7">鋁板 Aluminum - 2.70 g/cm³</option>
+                            <option value="8.96">紅銅 Copper - 8.96 g/cm³</option>
+                            <option value="8.5">黃銅 Brass - 8.50 g/cm³</option>
+                        </optgroup>
+                        <optgroup label="其他材質">
+                            <option value="1.18">壓克力 Acrylic - 1.18 g/cm³</option>
+                            <option value="0.6">一般木材 Wood - 0.60 g/cm³</option>
+                            <option value="custom">自定義密度 Custom...</option>
+                        </optgroup>
+                    </select>
+                </div>
+
+                <!-- Custom Density Input -->
+                <div id="custom-density-container" class="hidden">
+                    <label class="block text-[10px] font-bold text-blue-500 uppercase tracking-widest ml-1 mb-2">手動輸入密度 (g/cm³)</label>
+                    <input type="number" id="custom-density" placeholder="請輸入密度..." oninput="calculate()" class="input-apple w-full px-4 py-2.5 text-blue-600 font-bold text-md">
+                </div>
+
+                <!-- Plate Dimensions -->
+                <div id="plate-inputs" class="grid grid-cols-3 gap-5">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">長度 (mm)</label>
+                        <input type="number" id="length" placeholder="請輸入長度" oninput="calculate()" class="input-apple w-full px-4 py-4 text-lg font-semibold">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">寬度 (mm)</label>
+                        <input type="number" id="width" placeholder="請輸入寬度" oninput="calculate()" class="input-apple w-full px-4 py-4 text-lg font-semibold">
+                    </div>
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">厚度 (mm)</label>
+                        <input type="number" id="thickness" placeholder="請輸入厚度" oninput="calculate()" class="input-apple w-full px-4 py-4 text-lg font-semibold">
+                    </div>
+                </div>
+
+                <!-- Volume Input -->
+                <div id="volume-inputs" class="hidden">
+                    <div class="space-y-2">
+                        <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">總體積 (mm³)</label>
+                        <input type="number" id="volume" placeholder="請輸入 mm³ 數值" oninput="calculate()" class="input-apple w-full px-6 py-5 text-lg font-semibold">
+                    </div>
+                </div>
+
+                <!-- Result Surface -->
+                <div class="pt-4">
+                    <div class="result-surface text-center">
+                        <span class="text-[11px] font-bold text-[#86868b] uppercase tracking-[0.25em] mb-4 block">預估重量</span>
+                        <div class="flex items-baseline justify-center">
+                            <span id="result-val" class="text-7xl font-bold tracking-tighter">0.000</span>
+                            <span class="text-2xl font-bold text-[#86868b] ml-4">kg</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="mt-20 text-center">
+            <div class="h-[1px] w-12 bg-gray-200 mx-auto mb-6"></div>
+            <p class="text-[#1d1d1f] text-[14px] font-semibold tracking-tight">
+                Developed by <span class="text-blue-600">JOCHU</span>
+            </p>
+            <p class="text-[#86868b] text-[11px] mt-2 font-medium tracking-widest uppercase">
+                Precision Manufacturing Solution
+            </p>
+        </footer>
+    </div>
+
+    <script>
+        let currentMode = 'plate';
+
+        function switchTab(mode) {
+            currentMode = mode;
+            const tabPlate = document.getElementById('tab-plate');
+            const tabVolume = document.getElementById('tab-volume');
+            const plateInputs = document.getElementById('plate-inputs');
+            const volumeInputs = document.getElementById('volume-inputs');
+
+            if (mode === 'plate') {
+                tabPlate.classList.add('active');
+                tabVolume.classList.remove('active');
+                plateInputs.classList.remove('hidden');
+                volumeInputs.classList.add('hidden');
+            } else {
+                tabVolume.classList.add('active');
+                tabPlate.classList.remove('active');
+                volumeInputs.classList.remove('hidden');
+                plateInputs.classList.add('hidden');
+            }
+            calculate();
+        }
+
+        function calculate() {
+            const materialSelect = document.getElementById('material');
+            const customDensityContainer = document.getElementById('custom-density-container');
+            const customDensityInput = document.getElementById('custom-density');
+            
+            let density = parseFloat(materialSelect.value);
+            
+            if (materialSelect.value === 'custom') {
+                customDensityContainer.classList.remove('hidden');
+                density = parseFloat(customDensityInput.value) || 0;
+            } else {
+                customDensityContainer.classList.add('hidden');
+            }
+
+            let weight = 0;
+
+            if (currentMode === 'plate') {
+                const l = parseFloat(document.getElementById('length').value) || 0;
+                const w = parseFloat(document.getElementById('width').value) || 0;
+                const t = parseFloat(document.getElementById('thickness').value) || 0;
+                // mm³ to cm³ is / 1000, then Weight(g) = vCm³ * density, then to kg is / 1000
+                weight = (l * w * t * density) / 1000000;
+            } else {
+                const vMm3 = parseFloat(document.getElementById('volume').value) || 0;
+                weight = (vMm3 * density) / 1000000;
+            }
+
+            const resultElement = document.getElementById('result-val');
+            const formatted = weight.toLocaleString(undefined, {
+                minimumFractionDigits: 3,
+                maximumFractionDigits: 3
+            });
+            
+            if (resultElement.innerText !== formatted) {
+                resultElement.innerText = formatted;
+                resultElement.classList.remove('animate-value');
+                void resultElement.offsetWidth; 
+                resultElement.classList.add('animate-value');
+            }
+        }
+    </script>
+</body>
+</html>
