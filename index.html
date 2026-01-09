@@ -21,7 +21,6 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Apple 品牌風格標題 */
         .apple-hero-title {
             font-size: 3.5rem;
             font-weight: 700;
@@ -33,9 +32,7 @@
         }
 
         @media (max-width: 640px) {
-            .apple-hero-title {
-                font-size: 2.8rem;
-            }
+            .apple-hero-title { font-size: 2.8rem; }
         }
 
         .glass-card {
@@ -52,7 +49,6 @@
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        /* 縮小提示詞 (Placeholder) 的字體大小 */
         .input-apple::placeholder {
             font-size: 13px;
             font-weight: 400;
@@ -71,6 +67,7 @@
             font-weight: 600;
             color: #86868b;
             transition: all 0.3s ease;
+            white-space: nowrap;
         }
 
         .tab-btn.active {
@@ -98,17 +95,6 @@
             overflow: hidden;
         }
 
-        .result-surface::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(67, 138, 243, 0.1) 0%, transparent 70%);
-            pointer-events: none;
-        }
-
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(6px); }
             to { opacity: 1; transform: translateY(0); }
@@ -130,63 +116,93 @@
 <body class="min-h-screen flex flex-col items-center justify-center p-6 bg-[#fbfbfd]">
 
     <div class="w-full max-w-lg">
-        <!-- Header -->
-        <header class="text-center mb-14">
+        <header class="text-center mb-10">
             <h1 class="apple-hero-title">Weight<br>Calculator</h1>
         </header>
 
-        <!-- Main Card -->
         <div class="glass-card rounded-[2.5rem] p-8 md:p-10">
-            <!-- Navigation -->
-            <nav class="flex justify-start gap-10 mb-8 border-b border-gray-100">
+            <!-- 導覽切換 -->
+            <nav class="flex justify-start gap-6 md:gap-10 mb-8 border-b border-gray-100 overflow-x-auto">
                 <button id="tab-plate" onclick="switchTab('plate')" class="tab-btn active text-[14px] tracking-tight">板材模式</button>
                 <button id="tab-volume" onclick="switchTab('volume')" class="tab-btn text-[14px] tracking-tight">體積模式</button>
+                <button id="tab-carton" onclick="switchTab('carton')" class="tab-btn text-[14px] tracking-tight">紙箱模式</button>
             </nav>
 
-            <div class="space-y-8">
-                <!-- Material Picker - 分為金屬與其他 -->
-                <div class="space-y-2">
+            <div class="space-y-6">
+                
+                <!-- 材質選擇 (板材與體積模式) -->
+                <div id="material-section" class="space-y-2">
                     <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">材質設定 (密度 g/cm³)</label>
                     <select id="material" onchange="calculate()" class="input-apple w-full px-4 py-2.5 text-[15px] font-medium text-slate-700">
                         <optgroup label="金屬材質">
                             <option value="7.85">SECC 電鍍鋅鋼板 - 7.85 g/cm³</option>
                             <option value="7.85">SPCC 冷軋鋼板 - 7.85 g/cm³</option>
                             <option value="7.93">SUS304 不鏽鋼 - 7.93 g/cm³</option>
-                            <option value="2.7">鋁板 Aluminum - 2.70 g/cm³</option>
-                            <option value="8.96">紅銅 Copper - 8.96 g/cm³</option>
-                            <option value="8.5">黃銅 Brass - 8.50 g/cm³</option>
+                            <option value="7.98">SUS316 不鏽鋼 - 7.98 g/cm³</option>
+                            <option value="7.70">SUS430 不鏽鋼 - 7.70 g/cm³</option>
+                            <option value="2.71">A1050 鋁板 - 2.71 g/cm³</option>
+                            <option value="2.68">A5052 鋁板 - 2.68 g/cm³</option>
+                            <option value="2.70">A6061 鋁板 - 2.70 g/cm³</option>
+                            <option value="8.96">C1100 純銅 - 8.96 g/cm³</option>
+                            <option value="8.50">黃銅 Brass - 8.50 g/cm³</option>
+                            <option value="4.50">鈦合金 Titanium - 4.50 g/cm³</option>
                         </optgroup>
                         <optgroup label="其他材質">
                             <option value="1.18">壓克力 Acrylic - 1.18 g/cm³</option>
-                            <option value="0.6">一般木材 Wood - 0.60 g/cm³</option>
+                            <option value="0.60">一般木材 Wood - 0.60 g/cm³</option>
                             <option value="custom">自定義密度 Custom...</option>
                         </optgroup>
                     </select>
                 </div>
 
-                <!-- Custom Density Input -->
+                <!-- 紙箱模式專屬設定 -->
+                <div id="carton-settings" class="hidden space-y-5">
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">箱型設定</label>
+                            <select id="carton-type" onchange="calculate();" class="input-apple w-full px-4 py-2.5 text-[15px] font-medium text-slate-700">
+                                <option value="1.2">RSC 對口箱</option>
+                                <option value="2.1">DST 天地蓋</option>
+                            </select>
+                        </div>
+                        <div class="space-y-2">
+                            <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">紙質規格 (gsm / 厚度備註)</label>
+                            <select id="paper-quality" onchange="calculate()" class="input-apple w-full px-4 py-2.5 text-[15px] font-medium text-slate-700">
+                                <option value="0.55">三層 A 楞 (550g/m² | 約 5mm)</option>
+                                <option value="0.45">三層 B 楞 (450g/m² | 約 3mm)</option>
+                                <option value="0.85" selected>五層 AB 楞 (850g/m² | 約 8mm)</option>
+                                <option value="1.10">五層 加重級 (1100g/m² | 約 9mm)</option>
+                                <option value="0.35">三層 E 楞 (350g/m² | 約 1.5mm)</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 自定義密度輸入 -->
                 <div id="custom-density-container" class="hidden">
                     <label class="block text-[10px] font-bold text-blue-500 uppercase tracking-widest ml-1 mb-2">手動輸入密度 (g/cm³)</label>
                     <input type="number" id="custom-density" placeholder="請輸入密度..." oninput="calculate()" class="input-apple w-full px-4 py-2.5 text-blue-600 font-bold text-md">
                 </div>
 
-                <!-- Plate Dimensions -->
-                <div id="plate-inputs" class="grid grid-cols-3 gap-5">
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">長度 (mm)</label>
-                        <input type="number" id="length" placeholder="請輸入長度" oninput="calculate()" class="input-apple w-full px-4 py-4 text-lg font-semibold">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">寬度 (mm)</label>
-                        <input type="number" id="width" placeholder="請輸入寬度" oninput="calculate()" class="input-apple w-full px-4 py-4 text-lg font-semibold">
-                    </div>
-                    <div class="space-y-2">
-                        <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">厚度 (mm)</label>
-                        <input type="number" id="thickness" placeholder="請輸入厚度" oninput="calculate()" class="input-apple w-full px-4 py-4 text-lg font-semibold">
+                <!-- 尺寸輸入欄位 -->
+                <div id="dimension-section">
+                    <div class="grid grid-cols-3 gap-4">
+                        <div class="space-y-2">
+                            <label id="label-l" class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">長度 (mm)</label>
+                            <input type="number" id="length" placeholder="輸入長度" oninput="calculate()" class="input-apple w-full px-4 py-4 text-lg font-semibold">
+                        </div>
+                        <div class="space-y-2">
+                            <label id="label-w" class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">寬度 (mm)</label>
+                            <input type="number" id="width" placeholder="輸入寬度" oninput="calculate()" class="input-apple w-full px-4 py-4 text-lg font-semibold">
+                        </div>
+                        <div class="space-y-2">
+                            <label id="label-h" class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">厚度 (mm)</label>
+                            <input type="number" id="height" placeholder="輸入厚度" oninput="calculate()" class="input-apple w-full px-4 py-4 text-lg font-semibold">
+                        </div>
                     </div>
                 </div>
 
-                <!-- Volume Input -->
+                <!-- 體積輸入欄位 (體積模式) -->
                 <div id="volume-inputs" class="hidden">
                     <div class="space-y-2">
                         <label class="block text-[10px] font-bold text-[#86868b] uppercase tracking-widest ml-1">總體積 (mm³)</label>
@@ -194,28 +210,34 @@
                     </div>
                 </div>
 
-                <!-- Result Surface -->
+                <!-- 結果顯示區 -->
                 <div class="pt-4">
                     <div class="result-surface text-center">
-                        <span class="text-[11px] font-bold text-[#86868b] uppercase tracking-[0.25em] mb-4 block">預估重量</span>
+                        <span id="result-label" class="text-[11px] font-bold text-[#86868b] uppercase tracking-[0.25em] mb-4 block">預估重量</span>
                         <div class="flex items-baseline justify-center">
                             <span id="result-val" class="text-7xl font-bold tracking-tighter">0.000</span>
                             <span class="text-2xl font-bold text-[#86868b] ml-4">kg</span>
                         </div>
                     </div>
+                    
+                    <!-- 紙箱模式專用備註 -->
+                    <div id="carton-note" class="hidden mt-6 p-4 rounded-2xl bg-gray-50 border border-gray-100">
+                        <div class="flex items-center gap-2 mb-2">
+                            <svg class="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin='round' stroke-width='2.5' d='M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z'></path></svg>
+                            <span class="text-[12px] font-bold text-gray-500 uppercase tracking-wider">實際重量參考說明</span>
+                        </div>
+                        <p class="text-[13px] text-gray-500 leading-relaxed">
+                            理論計算值與實際秤重可能存在約 <span class="text-blue-600 font-bold">±10%</span> 的落差。常見原因包括：紙張含水率波動、生產過程開槽損耗、以及各家紙廠原紙克重之正負公差。
+                        </p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Footer -->
-        <footer class="mt-20 text-center">
+        <footer class="mt-16 text-center">
             <div class="h-[1px] w-12 bg-gray-200 mx-auto mb-6"></div>
-            <p class="text-[#1d1d1f] text-[14px] font-semibold tracking-tight">
-                Developed by <span class="text-blue-600">JOCHU</span>
-            </p>
-            <p class="text-[#86868b] text-[11px] mt-2 font-medium tracking-widest uppercase">
-                Precision Manufacturing Solution
-            </p>
+            <p class="text-[#1d1d1f] text-[14px] font-semibold tracking-tight">Developed by <span class="text-blue-600">JOCHU</span></p>
+            <p class="text-[#86868b] text-[11px] mt-2 font-medium tracking-widest uppercase">Precision Manufacturing Solution</p>
         </footer>
     </div>
 
@@ -224,21 +246,39 @@
 
         function switchTab(mode) {
             currentMode = mode;
-            const tabPlate = document.getElementById('tab-plate');
-            const tabVolume = document.getElementById('tab-volume');
-            const plateInputs = document.getElementById('plate-inputs');
+            const tabs = ['plate', 'volume', 'carton'];
+            tabs.forEach(t => document.getElementById(`tab-${t}`).classList.remove('active'));
+            document.getElementById(`tab-${mode}`).classList.add('active');
+
+            const materialSection = document.getElementById('material-section');
+            const cartonSettings = document.getElementById('carton-settings');
+            const dimensionSection = document.getElementById('dimension-section');
             const volumeInputs = document.getElementById('volume-inputs');
+            const cartonNote = document.getElementById('carton-note');
+            
+            const labelH = document.getElementById('label-h');
+            const inputH = document.getElementById('height');
+
+            materialSection.classList.add('hidden');
+            cartonSettings.classList.add('hidden');
+            dimensionSection.classList.add('hidden');
+            volumeInputs.classList.add('hidden');
+            cartonNote.classList.add('hidden');
 
             if (mode === 'plate') {
-                tabPlate.classList.add('active');
-                tabVolume.classList.remove('active');
-                plateInputs.classList.remove('hidden');
-                volumeInputs.classList.add('hidden');
-            } else {
-                tabVolume.classList.add('active');
-                tabPlate.classList.remove('active');
+                materialSection.classList.remove('hidden');
+                dimensionSection.classList.remove('hidden');
+                labelH.innerText = '厚度 (mm)';
+                inputH.placeholder = '請輸入厚度';
+            } else if (mode === 'volume') {
+                materialSection.classList.remove('hidden');
                 volumeInputs.classList.remove('hidden');
-                plateInputs.classList.add('hidden');
+            } else if (mode === 'carton') {
+                cartonSettings.classList.remove('hidden');
+                dimensionSection.classList.remove('hidden');
+                cartonNote.classList.remove('hidden');
+                labelH.innerText = '高度 (mm)';
+                inputH.placeholder = '請輸入高度';
             }
             calculate();
         }
@@ -248,26 +288,51 @@
             const customDensityContainer = document.getElementById('custom-density-container');
             const customDensityInput = document.getElementById('custom-density');
             
-            let density = parseFloat(materialSelect.value);
-            
-            if (materialSelect.value === 'custom') {
-                customDensityContainer.classList.remove('hidden');
-                density = parseFloat(customDensityInput.value) || 0;
-            } else {
-                customDensityContainer.classList.add('hidden');
-            }
-
             let weight = 0;
 
-            if (currentMode === 'plate') {
-                const l = parseFloat(document.getElementById('length').value) || 0;
-                const w = parseFloat(document.getElementById('width').value) || 0;
-                const t = parseFloat(document.getElementById('thickness').value) || 0;
-                // mm³ to cm³ is / 1000, then Weight(g) = vCm³ * density, then to kg is / 1000
-                weight = (l * w * t * density) / 1000000;
-            } else {
-                const vMm3 = parseFloat(document.getElementById('volume').value) || 0;
-                weight = (vMm3 * density) / 1000000;
+            if (currentMode === 'plate' || currentMode === 'volume') {
+                let density = parseFloat(materialSelect.value);
+                if (materialSelect.value === 'custom') {
+                    customDensityContainer.classList.remove('hidden');
+                    density = parseFloat(customDensityInput.value) || 0;
+                } else {
+                    customDensityContainer.classList.add('hidden');
+                }
+
+                if (currentMode === 'plate') {
+                    const l = parseFloat(document.getElementById('length').value);
+                    const w = parseFloat(document.getElementById('width').value);
+                    const t = parseFloat(document.getElementById('height').value);
+                    
+                    if (isNaN(l) || isNaN(w) || isNaN(t)) {
+                        weight = 0;
+                    } else {
+                        weight = (l * w * t * density) / 1000000;
+                    }
+                } else {
+                    const vMm3 = parseFloat(document.getElementById('volume').value);
+                    if (isNaN(vMm3)) {
+                        weight = 0;
+                    } else {
+                        weight = (vMm3 * density) / 1000000;
+                    }
+                }
+            } else if (currentMode === 'carton') {
+                customDensityContainer.classList.add('hidden');
+                const l = parseFloat(document.getElementById('length').value);
+                const w = parseFloat(document.getElementById('width').value);
+                const h = parseFloat(document.getElementById('height').value);
+                
+                if (isNaN(l) || isNaN(w) || isNaN(h) || l <= 0 || w <= 0 || h <= 0) {
+                    weight = 0;
+                } else {
+                    const cartonMultiplier = parseFloat(document.getElementById('carton-type').value);
+                    const paperGrammage = parseFloat(document.getElementById('paper-quality').value);
+                    
+                    // 紙箱計算公式 (長+寬+補強邊50)*(寬+高+補強邊30)*2 * 箱型係數
+                    const areaSqMm = (l + w + 50) * (w + h + 30) * 2 * cartonMultiplier;
+                    weight = (areaSqMm * paperGrammage) / 1000000;
+                }
             }
 
             const resultElement = document.getElementById('result-val');
